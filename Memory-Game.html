@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: yellowgreen;
+        }
+        .game-container {
+            display: grid;
+            grid-template-columns: repeat(4, 100px);
+            gap: 10px;
+            justify-content: center;
+            margin-top: 50px;
+        }
+        .card {
+            width: 100px;
+            height: 100px;
+            background: #fee500;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            cursor: pointer;
+            border-radius: 8px;
+            user-select: none;
+        }
+        .flipped {
+            background: #f8f9fa;
+            color: #000;
+            cursor: default;
+        }
+        .message {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Memory Game</h1>
+    <p>Match all pairs to win!</p>
+    <div class="game-container" id="game-container"></div>
+    <div class="message" id="message"></div>
+
+    <script>
+        const symbols = ['🌟', '❤️', '🎶', '🍀', '🌈', '☀️', '💮', '💎']; // Массив символов для игры
+        let cards = [...symbols, ...symbols].sort(() => Math.random() - 0.5); // Дублируем и перемешиваем символы
+        const gameContainer = document.getElementById('game-container'); // Контейнер для карточек
+        const message = document.getElementById('message'); // Сообщение для игрока
+        let [firstCard, secondCard, matches] = [null, null, 0]; // Переменные для отслеживания состояния игры
+
+        // Функция для создания карточки с заданным символом
+        const createCard = symbol => {
+            const card = document.createElement('div'); // Создаём элемент div для карточки
+            card.className = 'card'; // Добавляем класс 'card' для стилизации
+            card.dataset.symbol = symbol; // Сохраняем символ в data-атрибуте для последующей проверки совпадений
+
+            // Добавляем обработчик клика на карточку
+            card.addEventListener('click', () => {
+                // Проверяем, если карточка уже перевёрнута или выбрано две карточки, выходим из функции
+                if (card.classList.contains('flipped') || secondCard) return;
+
+                card.textContent = symbol; // Показываем символ на карточке
+                card.classList.add('flipped'); // Добавляем класс 'flipped', чтобы визуально отметить перевёрнутую карточку
+
+                // Если это первая выбранная карточка, сохраняем её в переменную firstCard
+                if (!firstCard) {
+                    firstCard = card;
+                } else {
+                    // Если уже выбрана первая карточка, сохраняем текущую во secondCard и проверяем совпадение
+                    secondCard = card;
+                    checkMatch(); // Вызываем функцию для проверки совпадения
+                }
+            });
+            return card; // Возвращаем созданную карточку
+        };
+
+        // Функция для проверки совпадения двух выбранных карточек
+        const checkMatch = () => {
+            // Проверяем, совпадают ли символы на первой и второй карточках
+            if (firstCard.dataset.symbol === secondCard.dataset.symbol) {
+                matches++; // Увеличиваем счётчик совпадений
+
+                // Если найдено все пары, отображаем сообщение о победе
+                if (matches === symbols.length) {
+                    message.textContent = 'You won!';
+                }
+
+                // Сбрасываем выбор карточек для следующего хода
+                [firstCard, secondCard] = [null, null];
+            } else {
+                // Если символы не совпадают, через 1 секунду скрываем символы и убираем класс 'flipped'
+                setTimeout(() => {
+                    [firstCard, secondCard].forEach(card => {
+                        card.textContent = ''; // Скрываем текст символа
+                        card.classList.remove('flipped'); // Убираем визуальный признак перевёрнутой карточки
+                    });
+
+                    // Сбрасываем выбор карточек для следующего хода
+                    [firstCard, secondCard] = [null, null];
+                }, 1000); // Задержка в 1 секунду для наглядности
+            }
+        };
+
+        cards.forEach(symbol => gameContainer.appendChild(createCard(symbol))); // Создаём карточки и добавляем их в контейнер
+    </script>
+</body>
+</html>
